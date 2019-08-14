@@ -193,10 +193,23 @@ void editorRefreshScreen() {
 /*** input ***/
 void editorMoveCursor(int key) {
     switch (key) {
-        case ARROW_LEFT: E.cx--; break;
-        case ARROW_RIGHT: E.cx++; break;
-        case ARROW_UP: E.cy--; break;
-        case ARROW_DOWN: E.cy++; break;
+        // Cursor position values clamped between 0 and screen dimensions
+        case ARROW_LEFT:
+            E.cx--;
+            E.cx = (E.cx < 0) ? 0 : E.cx;
+            break;
+        case ARROW_RIGHT:
+            E.cx++;
+            E.cx = (E.cx >= E.screencols) ? E.screencols - 1 : E.cx;
+            break;
+        case ARROW_UP:
+            E.cy--;
+            E.cy = (E.cy < 0) ? 0 : E.cy;
+            break;
+        case ARROW_DOWN:
+            E.cy++;
+            E.cy = (E.cy >= E.screenrows) ? E.screenrows - 1 : E.cy;
+            break;
     }
 }
 
