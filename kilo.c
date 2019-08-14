@@ -243,9 +243,9 @@ void editorMoveCursor(int key) {
 }
 
 void editorProcessKeypress() {
-    int c = editorReadKey();
+    int key = editorReadKey();
 
-    switch (c) {
+    switch (key) {
         // Quit key
         case CTRL_KEY('q'):
             write(STDOUT_FILENO, "\x1b[2J", 4);
@@ -261,7 +261,7 @@ void editorProcessKeypress() {
         case PAGE_UP:
         case PAGE_DOWN: {
             for (int times = E.screenrows; times > 0; times--) {
-                editorMoveCursor(c == PAGE_UP ? ARROW_UP : ARROW_DOWN);
+                editorMoveCursor(key == PAGE_UP ? ARROW_UP : ARROW_DOWN);
             }
             break;
         }
@@ -270,7 +270,7 @@ void editorProcessKeypress() {
         case ARROW_UP:
         case ARROW_LEFT:
         case ARROW_DOWN:
-        case ARROW_RIGHT: editorMoveCursor(c); break;
+        case ARROW_RIGHT: editorMoveCursor(key); break;
     }
 }
 
