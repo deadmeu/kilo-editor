@@ -126,11 +126,14 @@ void editorRefreshScreen() {
 
     // Hide the cursor
     abAppend(&ab, "\x1b[?25l", 6);
+    // Erase In Display - clear the screen
     abAppend(&ab, "\x1b[2J", 4);
+    // Reposition cursor to 1;1
     abAppend(&ab, "\x1b[H", 3);
 
     editorDrawRows(&ab);
 
+    // Reposition cursor to 1;1
     abAppend(&ab, "\x1b[H", 3);
     // Show the cursor
     abAppend(&ab, "\x1b[?25h", 6);
