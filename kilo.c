@@ -39,6 +39,7 @@ typedef struct erow {
 struct editorConfig {
     int cx, cy;
     int rowoff;
+    int coloff;
     int screenrows;
     int screencols;
     int numrows;
@@ -215,9 +216,21 @@ void abFree(struct abuf *ab) { free(ab->b); }
 
 /*** output ***/
 void editorScroll() {
-    E.rowoff = (E.cy < E.rowoff) ? E.cy : E.rowoff;
-    E.rowoff =
-        (E.cy >= E.rowoff + E.screenrows) ? E.cy - E.screenrows + 1 : E.rowoff;
+    // Vertical scrolling
+    if (E.cy < E.rowoff) {
+        E.rowoff = E.cy;
+    }
+    if (E.cy >= E.rowoff + E.screenrows) {
+        E.rowoff = E.cy - E.screenrows + 1;
+    }
+
+    // Horizontal scrolling
+    if (E.cx < E.coloff) {
+        E.coloff = E.cx;
+    }
+    if (E.cx >= E.coloff + E.screencols) {
+        E.coloff = E.cx - E.screencols + 1;
+    }
 }
 
 void editorDrawRows(struct abuf *ab) {
@@ -244,9 +257,14 @@ void editorDrawRows(struct abuf *ab) {
                 abAppend(ab, "~", 1);
             }
         } else {
-            int len = E.row[filerow].size;
-            if (len > E.screencols) len = E.screencols;
-            abAppend(ab, E.row[filerow].chars, len);
+            /* Drawing the file contents */
+            int len = E.row[filerow].size - E.coloff;
+
+            // Clamp len between 0 and E.screencols
+            len = (len < 0) ? 0 : len;
+            len = (len > E.screencols) ? E.screencols : len;
+
+            abAppend(ab, E.row[filerow].chars + E.coloff, len);
         }
 
         abAppend(ab, "\x1b[K", 3);
@@ -270,7 +288,8 @@ void editorRefreshScreen() {
 
     // Move the cursor
     char buf[32];
-    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1, E.cx + 1);
+    snprintf(buf, sizeof(buf), "\x1b[%d;%dH", (E.cy - E.rowoff) + 1,
+             (E.cx - E.coloff) + 1);
     abAppend(&ab, buf, strlen(buf));
 
     // Show the cursor
@@ -288,10 +307,7 @@ void editorMoveCursor(int key) {
             E.cx--;
             E.cx = (E.cx < 0) ? 0 : E.cx;
             break;
-        case ARROW_RIGHT:
-            E.cx++;
-            E.cx = (E.cx >= E.screencols) ? E.screencols - 1 : E.cx;
-            break;
+        case ARROW_RIGHT: E.cx++; break;
         case ARROW_UP:
             E.cy--;
             E.cy = (E.cy < 0) ? 0 : E.cy;
@@ -340,6 +356,7 @@ void initEditor() {
     E.cx = 0;
     E.cy = 0;
     E.rowoff = 0;
+    E.coloff = 0;
     E.numrows = 0;
     E.row = NULL;
 
